@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 
 import Login from './pages/admin/Login';
@@ -23,6 +23,7 @@ function App() {
 
                     {/* Protected Admin Routes */}
                     <Route path="/admin" element={<AdminLayout />}>
+                        <Route index element={<Navigate to="dashboard" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="services" element={<ServicesManager />} />
                         <Route path="products" element={<ProductsManager />} />
