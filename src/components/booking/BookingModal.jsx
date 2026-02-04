@@ -1,13 +1,5 @@
-import React, { useState } from 'react';
-
-const services = [
-    { id: 1, name: "Precision Cut", time: "60m", price: "€85" },
-    { id: 2, name: "Balayage", time: "180m", price: "€160" },
-    { id: 3, name: "Root Touch-Up", time: "90m", price: "€90" },
-    { id: 4, name: "Extension Install", time: "120m", price: "Consult" },
-    { id: 5, name: "Signature Blowout", time: "45m", price: "€55" },
-    { id: 6, name: "Keratin Treatment", time: "120m", price: "€120" },
-];
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 const timeSlots = ["09:00", "10:00", "11:30", "13:00", "14:30", "16:00", "17:30"];
 
@@ -16,9 +8,46 @@ const BookingModal = ({ isOpen, onClose }) => {
     const [selectedService, setSelectedService] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
+    const [services, setServices] = useState([]);
+
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Calendar State
     const [currentMonth, setCurrentMonth] = useState(new Date());
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchServices();
+
+            // Push a dummy state to history so "Back" button closes modal instead of leaving page
+            window.history.pushState({ modalOpen: true }, '');
+
+            const handlePopState = () => {
+                onClose();
+            };
+
+            window.addEventListener('popstate', handlePopState);
+
+            return () => {
+                window.removeEventListener('popstate', handlePopState);
+                // If closing manually (not via back button), revert the history state
+                if (window.history.state?.modalOpen) {
+                    window.history.back();
+                }
+            };
+        }
+    }, [isOpen]);
+
+    const fetchServices = async () => {
+        const { data } = await supabase.from('services').select('*').order('created_at', { ascending: true });
+        if (data) setServices(data);
+    };
 
     if (!isOpen) return null;
 
@@ -76,6 +105,38 @@ const BookingModal = ({ isOpen, onClose }) => {
         if (step > 1) setStep(step - 1);
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        const appointmentData = {
+            service_id: selectedService.id,
+            service_name: selectedService.title || selectedService.name,
+            service_price: selectedService.price,
+            customer_name: `${formData.firstName} ${formData.lastName}`,
+            customer_email: formData.email,
+            customer_phone: formData.phone,
+            appointment_date: selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+            appointment_time: selectedTime,
+            status: 'pending'
+        };
+
+        const { error } = await supabase.from('appointments').insert([appointmentData]);
+
+        setIsSubmitting(false);
+        if (error) {
+            alert('Error creating booking: ' + error.message);
+        } else {
+            alert('Booking Confirmed! We will contact you shortly.');
+            onClose();
+            setStep(1);
+            setSelectedService(null);
+            setSelectedDate(null);
+            setSelectedTime(null);
+            setFormData({ firstName: '', lastName: '', email: '', phone: '' });
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -102,9 +163,9 @@ const BookingModal = ({ isOpen, onClose }) => {
                         {selectedService && (
                             <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm animate-fade-in">
                                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Service</p>
-                                <p className="font-display font-bold text-base md:text-lg">{selectedService.name}</p>
+                                <p className="font-display font-bold text-base md:text-lg">{selectedService.title || selectedService.name}</p>
                                 <div className="flex justify-between mt-2 text-sm">
-                                    <span className="text-gray-500">{selectedService.time}</span>
+                                    <span className="text-gray-500">{selectedService.duration || selectedService.time}</span>
                                     <span className="text-gold-accent font-bold">{selectedService.price}</span>
                                 </div>
                             </div>
@@ -145,12 +206,13 @@ const BookingModal = ({ isOpen, onClose }) => {
                                         className={`p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 flex justify-between items-center group ${selectedService?.id === service.id ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-primary/30'}`}
                                     >
                                         <div>
-                                            <h4 className="font-bold text-gray-900 group-hover:text-primary transition-colors">{service.name}</h4>
-                                            <p className="text-sm text-gray-500 mt-1">{service.time}</p>
+                                            <h4 className="font-bold text-gray-900 group-hover:text-primary transition-colors">{service.title || service.name}</h4>
+                                            <p className="text-sm text-gray-500 mt-1">{service.duration || service.time}</p>
                                         </div>
                                         <p className="font-bold text-gold-accent">{service.price}</p>
                                     </div>
                                 ))}
+                                {services.length === 0 && <p className="text-gray-500">Loading services...</p>}
                             </div>
                         </div>
                     )}
@@ -216,11 +278,10 @@ const BookingModal = ({ isOpen, onClose }) => {
                                     </div>
                                 </div>
 
-                                {/* Time Selection (Horizontal on mobile, List on desktop) */}
+                                {/* Time Selection */}
                                 <div className="flex-1 lg:max-w-[200px] w-full">
                                     <h4 className="font-bold text-gray-400 uppercase text-xs tracking-wider mb-2 md:mb-4">Select Time</h4>
 
-                                    {/* Desktop: Vertical List / Mobile: Grid */}
                                     <div className="grid grid-cols-3 gap-2 md:flex md:flex-col md:gap-3 md:h-[320px] md:overflow-y-auto md:pr-2 md:scrollbar-hide">
                                         {timeSlots.map(time => (
                                             <button
@@ -247,16 +308,48 @@ const BookingModal = ({ isOpen, onClose }) => {
                                 <h3 className="text-2xl font-bold font-display">Your Details</h3>
                             </div>
 
-                            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                            <form className="space-y-4" onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input type="text" placeholder="First Name" className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all" />
-                                    <input type="text" placeholder="Last Name" className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all" />
+                                    <input
+                                        type="text"
+                                        placeholder="First Name"
+                                        className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all"
+                                        value={formData.firstName}
+                                        onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                                        required
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Last Name"
+                                        className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all"
+                                        value={formData.lastName}
+                                        onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                                        required
+                                    />
                                 </div>
-                                <input type="email" placeholder="Email Address" className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all" />
-                                <input type="tel" placeholder="Phone Number" className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all" />
+                                <input
+                                    type="email"
+                                    placeholder="Email Address"
+                                    className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all"
+                                    value={formData.email}
+                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                    required
+                                />
+                                <input
+                                    type="tel"
+                                    placeholder="Phone Number"
+                                    className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary border-2 outline-none transition-all"
+                                    value={formData.phone}
+                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                    required
+                                />
 
-                                <button className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-xl shadow-primary/30 mt-4 transition-all hover:scale-[1.02]">
-                                    Confirm Appointment
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-xl shadow-primary/30 mt-4 transition-all hover:scale-[1.02] disabled:opacity-50"
+                                >
+                                    {isSubmitting ? 'Confirming...' : 'Confirm Appointment'}
                                 </button>
                             </form>
                         </div>
