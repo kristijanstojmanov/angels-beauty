@@ -9,6 +9,7 @@ const GalleryManager = () => {
     const [newItemUrl, setNewItemUrl] = useState('');
     const [newCategory, setNewCategory] = useState('hair-coloring'); // Default
     const [isAdding, setIsAdding] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     const fetchImages = async () => {
         setLoading(true);
@@ -25,10 +26,21 @@ const GalleryManager = () => {
         fetchImages();
     }, []);
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this image?')) {
-            const { error } = await supabase.from('gallery').delete().eq('id', id);
-            if (!error) fetchImages();
+    const checkDelete = (id) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            const { error } = await supabase.from('gallery').delete().eq('id', deleteId);
+            if (error) throw error;
+
+            setDeleteId(null);
+            fetchImages();
+        } catch (error) {
+            alert('Delete Error: ' + error.message);
         }
     };
 
@@ -109,7 +121,7 @@ const GalleryManager = () => {
                             />
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <button
-                                    onClick={() => handleDelete(img.id)}
+                                    onClick={() => checkDelete(img.id)}
                                     className="bg-white text-red-500 p-3 rounded-full hover:bg-red-50 transition-colors"
                                     title="Delete"
                                 >
@@ -121,6 +133,34 @@ const GalleryManager = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteId && (
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="material-symbols-outlined text-3xl text-red-600">delete</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Image?</h3>
+                        <p className="text-gray-500 mb-8">This action cannot be undone.</p>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteId(null)}
+                                className="flex-1 py-3 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="flex-1 py-3 font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-lg shadow-red-200"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

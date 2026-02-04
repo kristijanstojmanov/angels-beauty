@@ -17,12 +17,21 @@ const BookingModal = ({ isOpen, onClose }) => {
         phone: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     // Calendar State
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
     useEffect(() => {
         if (isOpen) {
+            // Reset state on open
+            setStep(1);
+            setIsSuccess(false);
+            setFormData({ firstName: '', lastName: '', email: '', phone: '' });
+            setSelectedService(null);
+            setSelectedDate(null);
+            setSelectedTime(null);
+
             fetchServices();
 
             // Push a dummy state to history so "Back" button closes modal instead of leaving page
@@ -127,13 +136,7 @@ const BookingModal = ({ isOpen, onClose }) => {
         if (error) {
             alert('Error creating booking: ' + error.message);
         } else {
-            alert('Booking Confirmed! We will contact you shortly.');
-            onClose();
-            setStep(1);
-            setSelectedService(null);
-            setSelectedDate(null);
-            setSelectedTime(null);
-            setFormData({ firstName: '', lastName: '', email: '', phone: '' });
+            setIsSuccess(true);
         }
     };
 
@@ -149,37 +152,41 @@ const BookingModal = ({ isOpen, onClose }) => {
                 <div className="hidden md:flex bg-[#f0f0f0] dark:bg-black/40 md:w-1/3 p-8 flex-col justify-between relative overflow-hidden">
                     <div className="relative z-10">
                         <h2 className="text-2xl md:text-3xl font-display font-medium text-primary mb-2">Book Your Visit</h2>
-                        <p className="text-gray-500 text-sm">Step {step} of 3</p>
+                        <p className="text-gray-500 text-sm">Step {isSuccess ? 'Confirmed' : step} of 3</p>
 
                         {/* Progress Bar */}
-                        <div className="flex gap-2 mt-4 md:mt-6">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-500 ${step >= i ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                            ))}
-                        </div>
+                        {!isSuccess && (
+                            <div className="flex gap-2 mt-4 md:mt-6">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-500 ${step >= i ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="relative z-10 space-y-4">
-                        {selectedService && (
-                            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm animate-fade-in">
-                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Service</p>
-                                <p className="font-display font-bold text-base md:text-lg">{selectedService.title || selectedService.name}</p>
-                                <div className="flex justify-between mt-2 text-sm">
-                                    <span className="text-gray-500">{selectedService.duration || selectedService.time}</span>
-                                    <span className="text-gold-accent font-bold">{selectedService.price}</span>
+                    {!isSuccess && (
+                        <div className="relative z-10 space-y-4">
+                            {selectedService && (
+                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm animate-fade-in">
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Service</p>
+                                    <p className="font-display font-bold text-base md:text-lg">{selectedService.title || selectedService.name}</p>
+                                    <div className="flex justify-between mt-2 text-sm">
+                                        <span className="text-gray-500">{selectedService.duration || selectedService.time}</span>
+                                        <span className="text-gold-accent font-bold">{selectedService.price}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        {(selectedDate || selectedTime) && (
-                            <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
-                                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Date & Time</p>
-                                <div className="font-display font-bold text-lg">
-                                    {selectedDate ? <span className="block text-primary">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span> : <span className="text-gray-300">Select Date</span>}
-                                    {selectedTime ? <span className="block mt-1">at {selectedTime}</span> : <span className="text-gray-300 text-sm font-sans font-normal">Select Time</span>}
+                            )}
+                            {(selectedDate || selectedTime) && (
+                                <div className="bg-white p-4 rounded-xl shadow-sm animate-fade-in">
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Date & Time</p>
+                                    <div className="font-display font-bold text-lg">
+                                        {selectedDate ? <span className="block text-primary">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span> : <span className="text-gray-300">Select Date</span>}
+                                        {selectedTime ? <span className="block mt-1">at {selectedTime}</span> : <span className="text-gray-300 text-sm font-sans font-normal">Select Time</span>}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Decorative Background Blob - Hidden on mobile to save space/performance */}
                     <div className="hidden md:block absolute -bottom-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
@@ -192,7 +199,7 @@ const BookingModal = ({ isOpen, onClose }) => {
                     </button>
 
                     {/* Step 1: Services */}
-                    {step === 1 && (
+                    {step === 1 && !isSuccess && (
                         <div className="space-y-6 animate-fade-in">
                             <h3 className="text-2xl font-bold font-display">Select a Treatment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -218,7 +225,7 @@ const BookingModal = ({ isOpen, onClose }) => {
                     )}
 
                     {/* Step 2: Date & Time (CALENDAR GRID) */}
-                    {step === 2 && (
+                    {step === 2 && !isSuccess && (
                         <div className="space-y-8 animate-fade-in">
                             <div className="flex items-center gap-4 mb-2">
                                 <button onClick={handleBack} className="text-gray-400 hover:text-black hover:bg-gray-100 p-2 rounded-full transition-all">
@@ -299,7 +306,7 @@ const BookingModal = ({ isOpen, onClose }) => {
                     )}
 
                     {/* Step 3: Details */}
-                    {step === 3 && (
+                    {step === 3 && !isSuccess && (
                         <div className="space-y-6 animate-fade-in">
                             <div className="flex items-center gap-4 mb-4">
                                 <button onClick={handleBack} className="text-gray-400 hover:text-black hover:bg-gray-100 p-2 rounded-full transition-all">
@@ -355,8 +362,29 @@ const BookingModal = ({ isOpen, onClose }) => {
                         </div>
                     )}
 
+                    {/* Step 4: Success View */}
+                    {isSuccess && (
+                        <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in space-y-6">
+                            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-5xl text-green-600">check_circle</span>
+                            </div>
+                            <h3 className="text-3xl font-display font-bold text-gray-900">Booking Confirmed!</h3>
+                            <p className="text-gray-500 max-w-md">
+                                Thank you, <strong>{formData.firstName}</strong>. Your appointment for <strong>{selectedService?.title || selectedService?.name}</strong> on <strong>{selectedDate?.toLocaleDateString()} {selectedTime}</strong> has been received.
+                            </p>
+                            <p className="text-sm text-gray-400">We will send a confirmation email to {formData.email} shortly.</p>
+
+                            <button
+                                onClick={onClose}
+                                className="px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover shadow-lg transition-all mt-4"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    )}
+
                     {/* Next Button (Floating if step < 3) */}
-                    {step < 3 && (
+                    {step < 3 && !isSuccess && (
                         <div className="mt-8 flex justify-end">
                             <button
                                 onClick={handleNext}

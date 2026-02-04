@@ -73,7 +73,13 @@ const Home = () => {
             <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
 
             <ShopCartButton isOpen={isCartOpen} onClick={() => setIsCartOpen(!isCartOpen)} count={cart.length} />
-            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cartItems={cart} onRemove={removeFromCart} />
+            <CartDrawer
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                cartItems={cart}
+                onRemove={removeFromCart}
+                onClearCart={() => setCart([])}
+            />
         </div>
     );
 };

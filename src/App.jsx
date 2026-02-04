@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 
 import Login from './pages/admin/Login';
+import DebugAuth from './pages/admin/DebugAuth';
 
 import AdminLayout from './components/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -18,6 +19,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/admin/login" element={<Login />} />
+                    <Route path="/admin/debug" element={<DebugAuth />} />
 
                     {/* Protected Admin Routes */}
                     <Route path="/admin" element={<AdminLayout />}>

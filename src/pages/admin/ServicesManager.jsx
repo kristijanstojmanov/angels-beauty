@@ -8,6 +8,7 @@ const ServicesManager = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentService, setCurrentService] = useState(null); // null = creating new
+    const [deleteId, setDeleteId] = useState(null);
 
     // Fetch Services
     const fetchServices = async () => {
@@ -25,10 +26,21 @@ const ServicesManager = () => {
         fetchServices();
     }, []);
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this service?')) {
-            const { error } = await supabase.from('services').delete().eq('id', id);
-            if (!error) fetchServices();
+    const checkDelete = (id) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            const { error } = await supabase.from('services').delete().eq('id', deleteId);
+            if (error) throw error;
+
+            setDeleteId(null);
+            fetchServices();
+        } catch (error) {
+            alert('Delete Error: ' + error.message);
         }
     };
 
@@ -93,7 +105,7 @@ const ServicesManager = () => {
                                             <span className="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(service.id)}
+                                            onClick={() => checkDelete(service.id)}
                                             className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
                                             title="Delete"
                                         >
@@ -114,6 +126,34 @@ const ServicesManager = () => {
             )}
 
             {/* Modal Placeholder */}
+            {/* Delete Confirmation Modal */}
+            {deleteId && (
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="material-symbols-outlined text-3xl text-red-600">delete</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Service?</h3>
+                        <p className="text-gray-500 mb-8">This action cannot be undone.</p>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteId(null)}
+                                className="flex-1 py-3 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="flex-1 py-3 font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-lg shadow-red-200"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {isModalOpen && (
                 <ServiceModal
                     service={currentService}
