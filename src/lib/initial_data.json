@@ -1,0 +1,162 @@
+{
+    "services": [
+        {
+            "icon": "content_cut",
+            "title": "Precision Cuts",
+            "description": "Tailored cuts that frame your face and suit your lifestyle. From bobs to layers and pixie cuts.",
+            "price": "from $85",
+            "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800"
+        },
+        {
+            "icon": "palette",
+            "title": "Creative Color",
+            "description": "Expert balayage, foliage, color correction, and vivid transformations using premium bond-building color.",
+            "price": "from $160",
+            "image_url": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&q=80&w=800"
+        },
+        {
+            "icon": "spa",
+            "title": "Luxury Treatments",
+            "description": "Restore health and shine with Keratin Complex, Olaplex, and deep hydration botox treatments.",
+            "price": "from $120",
+            "image_url": "https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=800"
+        },
+        {
+            "icon": "extension",
+            "title": "Hair Extensions",
+            "description": "Add volume and length seamlessly with hand-tied wefts, tape-ins, and keratin bonds.",
+            "price": "Consultation",
+            "image_url": "https://images.unsplash.com/photo-1519699047748-40baea614f42?auto=format&fit=crop&q=80&w=800"
+        },
+        {
+            "icon": "diamond",
+            "title": "Event Styling",
+            "description": "Breathtaking updos, hollywood waves, and bridal styling for your most important moments.",
+            "price": "from $95",
+            "image_url": "https://images.unsplash.com/photo-1481980235850-66e47651e431?auto=format&fit=crop&q=80&w=800"
+        },
+        {
+            "icon": "brush",
+            "title": "Blowouts & Shine",
+            "description": "The perfect finish. Signature blowouts that last for days, adding bounce and mirror-like shine.",
+            "price": "from $55",
+            "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&q=80&w=800"
+        }
+    ],
+    "products": [
+        {
+            "name": "Gold Repair Shampoo",
+            "category": "Wash",
+            "price": "$32",
+            "image_url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Hydrating Conditioner",
+            "category": "Wash",
+            "price": "$34",
+            "image_url": "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Purple Toning Wash",
+            "category": "Wash",
+            "price": "$30",
+            "image_url": "https://images.unsplash.com/photo-1608248597279-f99d160bfbc8?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Argan Shine Oil",
+            "category": "Treatments",
+            "price": "$45",
+            "image_url": "https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Intense Repair Mask",
+            "category": "Treatments",
+            "price": "$49",
+            "image_url": "https://images.unsplash.com/photo-1598440947619-2c35fc9af908?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Scalp Detox Scrub",
+            "category": "Treatments",
+            "price": "$38",
+            "image_url": "https://images.unsplash.com/photo-1556228578-8c89e6fb883e?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Volume Mousse",
+            "category": "Styling",
+            "price": "$28",
+            "image_url": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Texture Sea Spray",
+            "category": "Styling",
+            "price": "$26",
+            "image_url": "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Heat Protectant",
+            "category": "Styling",
+            "price": "$32",
+            "image_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Detangling Brush",
+            "category": "Tools",
+            "price": "$25",
+            "image_url": "https://images.unsplash.com/photo-1590159763121-7c9631d6928e?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "name": "Silk Pillowcase",
+            "category": "Tools",
+            "price": "$55",
+            "image_url": "https://images.unsplash.com/photo-1571781535014-53bd942978d0?auto=format&fit=crop&q=80&w=600"
+        }
+    ],
+    "faqs": [
+        {
+            "question": "Do I need to book an appointment?",
+            "answer": "Yes, we recommend booking in advance to ensure your preferred time slot, especially for weekend appointments.",
+            "display_order": 1
+        },
+        {
+            "question": "What products do you use?",
+            "answer": "We exclusively use premium, organic, and cruelty-free products from top international brands.",
+            "display_order": 2
+        },
+        {
+            "question": "Can I cancel my appointment?",
+            "answer": "We require 24 hours notice for cancellations. Late cancellations may incur a fee.",
+            "display_order": 3
+        },
+        {
+            "question": "Do you offer gift cards?",
+            "answer": "Absolutely! You can purchase digital or physical gift cards at our salon or online.",
+            "display_order": 4
+        }
+    ],
+    "gallery": [
+        {
+            "image_url": "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&q=80&w=800",
+            "display_order": 1
+        },
+        {
+            "image_url": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=800",
+            "display_order": 2
+        },
+        {
+            "image_url": "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&q=80&w=800",
+            "display_order": 3
+        },
+        {
+            "image_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=800",
+            "display_order": 4
+        },
+        {
+            "image_url": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=800",
+            "display_order": 5
+        },
+        {
+            "image_url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800",
+            "display_order": 6
+        }
+    ]
+}
