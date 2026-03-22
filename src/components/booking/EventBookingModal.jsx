@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useLang } from '../../lib/LanguageContext';
 
@@ -7,6 +7,10 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
     const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '', tickets: 1, notes: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const onCloseRef = useRef(onClose);
+
+    // Keep ref current to avoid stale closure in popstate handler
+    useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
     useEffect(() => {
         if (isOpen) {
@@ -14,7 +18,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
             setFormData({ firstName: '', lastName: '', email: '', phone: '', tickets: 1, notes: '' });
 
             window.history.pushState({ modalOpen: true }, '');
-            const handlePopState = () => { onClose(); };
+            const handlePopState = () => { onCloseRef.current(); };
             window.addEventListener('popstate', handlePopState);
             return () => {
                 window.removeEventListener('popstate', handlePopState);
@@ -27,8 +31,10 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
 
     if (!isOpen || !event) return null;
 
-    const eventTitle = lang === 'el' ? event.titleEl : event.titleEn;
-    const eventDesc = lang === 'el' ? event.descEl : event.descEn;
+    const eventTitle = lang === 'el' ? (event.title_el || event.title_en) : event.title_en;
+    const eventDesc = lang === 'el' ? (event.description_el || event.description_en) : event.description_en;
+    const eventPrice = Number(event.price) || 0;
+    const priceDisplay = eventPrice === 0 ? t('events.free') : `€${eventPrice}`;
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
@@ -46,11 +52,11 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
 
         const registrationData = {
             service_name: eventTitle,
-            service_price: event.price,
+            service_price: priceDisplay,
             customer_name: `${formData.firstName} ${formData.lastName}`,
             customer_email: formData.email,
             customer_phone: formData.phone,
-            appointment_date: formatDate(event.date),
+            appointment_date: event.date,
             appointment_time: event.time,
             status: 'pending',
             notes: `Event Registration | Tickets: ${formData.tickets}${formData.notes ? ' | Notes: ' + formData.notes : ''}`,
@@ -66,6 +72,8 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
         }
     };
 
+    const handleChange = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }));
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose}></div>
@@ -74,7 +82,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                 {/* Event Header with Image */}
                 <div className="relative h-48 md:h-56 overflow-hidden flex-shrink-0">
                     <img
-                        src={event.image}
+                        src={event.image_url}
                         alt={eventTitle}
                         className="w-full h-full object-cover"
                     />
@@ -89,7 +97,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
 
                     <div className="absolute bottom-6 left-6 right-6 text-white">
                         <div className="inline-block bg-gold-accent text-black px-3 py-1 rounded-full font-bold text-xs mb-2">
-                            {event.price}
+                            {priceDisplay}
                         </div>
                         <h2 className="text-2xl md:text-3xl font-display font-bold">{eventTitle}</h2>
                         <p className="text-white/70 text-sm mt-1">{eventDesc}</p>
@@ -136,7 +144,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                             placeholder={t('eventBooking.firstName')}
                                             className="w-full p-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-primary outline-none transition-all text-sm"
                                             value={formData.firstName}
-                                            onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                                            onChange={handleChange('firstName')}
                                             required
                                         />
                                         <input
@@ -144,7 +152,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                             placeholder={t('eventBooking.lastName')}
                                             className="w-full p-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-primary outline-none transition-all text-sm"
                                             value={formData.lastName}
-                                            onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                                            onChange={handleChange('lastName')}
                                             required
                                         />
                                     </div>
@@ -153,7 +161,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                         placeholder={t('eventBooking.emailAddress')}
                                         className="w-full p-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-primary outline-none transition-all text-sm"
                                         value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        onChange={handleChange('email')}
                                         required
                                     />
                                     <input
@@ -161,7 +169,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                         placeholder={t('eventBooking.phoneNumber')}
                                         className="w-full p-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-primary outline-none transition-all text-sm"
                                         value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={handleChange('phone')}
                                         required
                                     />
 
@@ -170,7 +178,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                         <div className="flex items-center gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, tickets: Math.max(1, formData.tickets - 1) })}
+                                                onClick={() => setFormData(prev => ({ ...prev, tickets: Math.max(1, prev.tickets - 1) }))}
                                                 className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all"
                                             >
                                                 <span className="material-symbols-outlined text-sm">remove</span>
@@ -178,7 +186,7 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                             <span className="text-xl font-bold w-8 text-center">{formData.tickets}</span>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, tickets: Math.min(event.spots, formData.tickets + 1) })}
+                                                onClick={() => setFormData(prev => ({ ...prev, tickets: Math.min(event.spots, prev.tickets + 1) }))}
                                                 className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all"
                                             >
                                                 <span className="material-symbols-outlined text-sm">add</span>
@@ -193,14 +201,14 @@ const EventBookingModal = ({ isOpen, onClose, event }) => {
                                         placeholder={t('eventBooking.specialRequirements')}
                                         className="w-full p-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-primary outline-none transition-all text-sm resize-none h-20"
                                         value={formData.notes}
-                                        onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                        onChange={handleChange('notes')}
                                     />
 
                                     {/* Total */}
                                     <div className="flex justify-between items-center bg-primary/5 rounded-xl p-4">
                                         <span className="font-bold text-gray-600">{t('eventBooking.price')}</span>
                                         <span className="text-2xl font-display font-bold text-primary">
-                                            {event.price === t('events.free') ? t('events.free') : `€${parseInt(event.price.replace('€', '')) * formData.tickets}`}
+                                            {eventPrice === 0 ? t('events.free') : `€${eventPrice * formData.tickets}`}
                                         </span>
                                     </div>
 

@@ -10,26 +10,16 @@ const Events = () => {
 
     useEffect(() => {
         const fetchEvents = async () => {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('events')
                 .select('*')
                 .gte('date', new Date().toISOString().split('T')[0])
                 .order('date', { ascending: true });
-            if (data) {
-                setEvents(data.map(e => ({
-                    id: e.id,
-                    titleEn: e.title_en,
-                    titleEl: e.title_el || e.title_en,
-                    descEn: e.description_en,
-                    descEl: e.description_el || e.description_en,
-                    date: e.date,
-                    time: e.time,
-                    location: e.location,
-                    image: e.image_url,
-                    price: `€${e.price}`,
-                    spots: e.spots,
-                })));
+            if (error) {
+                console.error('Failed to fetch events:', error.message);
+                return;
             }
+            if (data) setEvents(data);
         };
         fetchEvents();
     }, []);
@@ -63,61 +53,65 @@ const Events = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {events.map((event) => (
-                        <div
-                            key={event.id}
-                            className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2rem] overflow-hidden hover:bg-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-2"
-                        >
-                            <div className="relative h-48 overflow-hidden">
-                                <img
-                                    src={event.image}
-                                    alt={lang === 'el' ? event.titleEl : event.titleEn}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent"></div>
-                                <div className="absolute top-4 right-4 bg-gold-accent text-black px-4 py-1.5 rounded-full font-bold text-sm shadow-lg">
-                                    {event.price}
+                    {events.map((event) => {
+                        const title = lang === 'el' ? (event.title_el || event.title_en) : event.title_en;
+                        const desc = lang === 'el' ? (event.description_el || event.description_en) : event.description_en;
+                        const priceDisplay = event.price === 0 ? t('events.free') : `€${event.price}`;
+
+                        return (
+                            <div
+                                key={event.id}
+                                className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2rem] overflow-hidden hover:bg-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-2"
+                            >
+                                <div className="relative h-48 overflow-hidden">
+                                    <img
+                                        src={event.image_url}
+                                        alt={title}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent"></div>
+                                    <div className="absolute top-4 right-4 bg-gold-accent text-black px-4 py-1.5 rounded-full font-bold text-sm shadow-lg">
+                                        {priceDisplay}
+                                    </div>
+                                </div>
+
+                                <div className="p-6 space-y-4">
+                                    <h3 className="text-xl font-display font-bold text-white group-hover:text-primary transition-colors">
+                                        {title}
+                                    </h3>
+                                    <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+
+                                    <div className="space-y-2 pt-2">
+                                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                                            <span className="material-symbols-outlined text-primary text-base">calendar_today</span>
+                                            {formatDate(event.date)}
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                                            <span className="material-symbols-outlined text-primary text-base">schedule</span>
+                                            {event.time}
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                                            <span className="material-symbols-outlined text-primary text-base">location_on</span>
+                                            {t('events.atSalon')}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-xs text-gold-accent font-bold uppercase tracking-wider pt-2">
+                                        <span className="material-symbols-outlined text-sm">group</span>
+                                        {t('events.limitedSpots')} — {event.spots} {lang === 'el' ? 'θέσεις' : 'spots'}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setSelectedEvent(event)}
+                                        className="w-full mt-2 bg-white/10 hover:bg-primary border border-white/20 hover:border-primary text-white py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">event</span>
+                                        {t('events.bookSpot')}
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="p-6 space-y-4">
-                                <h3 className="text-xl font-display font-bold text-white group-hover:text-primary transition-colors">
-                                    {lang === 'el' ? event.titleEl : event.titleEn}
-                                </h3>
-                                <p className="text-gray-400 text-sm leading-relaxed">
-                                    {lang === 'el' ? event.descEl : event.descEn}
-                                </p>
-
-                                <div className="space-y-2 pt-2">
-                                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                                        <span className="material-symbols-outlined text-primary text-base">calendar_today</span>
-                                        {formatDate(event.date)}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                                        <span className="material-symbols-outlined text-primary text-base">schedule</span>
-                                        {event.time}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                                        <span className="material-symbols-outlined text-primary text-base">location_on</span>
-                                        {t('events.atSalon')}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-xs text-gold-accent font-bold uppercase tracking-wider pt-2">
-                                    <span className="material-symbols-outlined text-sm">group</span>
-                                    {t('events.limitedSpots')} — {event.spots} {lang === 'el' ? 'θέσεις' : 'spots'}
-                                </div>
-
-                                <button
-                                    onClick={() => setSelectedEvent(event)}
-                                    className="w-full mt-2 bg-white/10 hover:bg-primary border border-white/20 hover:border-primary text-white py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2"
-                                >
-                                    <span className="material-symbols-outlined text-sm">event</span>
-                                    {t('events.bookSpot')}
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </section>

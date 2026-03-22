@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useLang } from '../../lib/LanguageContext';
 
@@ -6,19 +6,34 @@ const ContactModal = ({ isOpen, onClose }) => {
     const { t } = useLang();
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [submitted, setSubmitted] = useState(false);
+    const timerRefs = useRef([]);
+
+    // Reset state on open and clean up timers on close/unmount
+    useEffect(() => {
+        if (isOpen) {
+            setSubmitted(false);
+            setFormData({ name: '', email: '', message: '' });
+        }
+        return () => {
+            timerRefs.current.forEach(clearTimeout);
+            timerRefs.current = [];
+        };
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setTimeout(() => {
+        const t1 = setTimeout(() => {
             setSubmitted(true);
-            setTimeout(() => {
+            const t2 = setTimeout(() => {
                 setSubmitted(false);
                 setFormData({ name: '', email: '', message: '' });
                 onClose();
             }, 2000);
+            timerRefs.current.push(t2);
         }, 1000);
+        timerRefs.current.push(t1);
     };
 
     return ReactDOM.createPortal(

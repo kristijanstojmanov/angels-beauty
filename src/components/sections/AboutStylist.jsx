@@ -9,12 +9,16 @@ const AboutStylist = ({ onOpenBooking }) => {
 
     useEffect(() => {
         const fetchStylist = async () => {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('stylists')
                 .select('*')
                 .eq('is_main', true)
                 .limit(1)
                 .single();
+            if (error) {
+                console.error('Failed to fetch stylist:', error.message);
+                return;
+            }
             if (data) setStylist(data);
         };
         fetchStylist();

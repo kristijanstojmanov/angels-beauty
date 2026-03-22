@@ -5,13 +5,18 @@ import { supabase } from '../../lib/supabase';
 const Brands = () => {
     const { t } = useLang();
     const [brands, setBrands] = useState([]);
+    const [brokenImages, setBrokenImages] = useState(new Set());
 
     useEffect(() => {
         const fetchBrands = async () => {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('brands')
-                .select('*')
+                .select('id, name, logo_url')
                 .order('display_order', { ascending: true });
+            if (error) {
+                console.error('Failed to fetch brands:', error.message);
+                return;
+            }
             if (data) setBrands(data);
         };
         fetchBrands();
@@ -37,15 +42,18 @@ const Brands = () => {
                             key={brand.id}
                             className="group flex items-center justify-center w-28 h-16 md:w-36 md:h-20 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
                         >
-                            <img
-                                src={brand.logo_url}
-                                alt={brand.name}
-                                className="max-w-full max-h-full object-contain"
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.parentElement.innerHTML = `<span class="text-xl md:text-2xl font-display font-bold text-gray-400 group-hover:text-primary transition-colors">${brand.name}</span>`;
-                                }}
-                            />
+                            {brokenImages.has(brand.id) ? (
+                                <span className="text-xl md:text-2xl font-display font-bold text-gray-400 group-hover:text-primary transition-colors">
+                                    {brand.name}
+                                </span>
+                            ) : (
+                                <img
+                                    src={brand.logo_url}
+                                    alt={brand.name}
+                                    className="max-w-full max-h-full object-contain"
+                                    onError={() => setBrokenImages(prev => new Set(prev).add(brand.id))}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>

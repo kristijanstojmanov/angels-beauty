@@ -16,12 +16,16 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
 
     useEffect(() => {
         const fetchReviews = async () => {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('reviews')
-                .select('*')
+                .select('id, author, text_en, text_el, rating, avatar_url')
                 .eq('is_featured', true)
                 .order('created_at', { ascending: true })
                 .limit(5);
+            if (error) {
+                console.error('Failed to fetch reviews:', error.message);
+                return;
+            }
             if (data) setReviews(data);
         };
         fetchReviews();

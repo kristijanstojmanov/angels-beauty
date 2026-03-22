@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useLang } from '../../lib/LanguageContext';
 
@@ -17,6 +17,9 @@ const BookingModal = ({ isOpen, onClose }) => {
     const [isSuccess, setIsSuccess] = useState(false);
 
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const onCloseRef = useRef(onClose);
+
+    useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
     useEffect(() => {
         if (isOpen) {
@@ -29,7 +32,7 @@ const BookingModal = ({ isOpen, onClose }) => {
             fetchServices();
 
             window.history.pushState({ modalOpen: true }, '');
-            const handlePopState = () => { onClose(); };
+            const handlePopState = () => { onCloseRef.current(); };
             window.addEventListener('popstate', handlePopState);
             return () => {
                 window.removeEventListener('popstate', handlePopState);
