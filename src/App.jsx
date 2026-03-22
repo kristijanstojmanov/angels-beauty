@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { LanguageProvider } from './lib/LanguageContext';
 import Home from './pages/Home';
 
 import Login from './pages/admin/Login';
@@ -13,6 +14,7 @@ import BookingsManager from './pages/admin/BookingsManager';
 
 function App() {
     return (
+        <LanguageProvider>
         <Router>
             <div className="bg-background-light dark:bg-background-dark min-h-screen text-text-main-light dark:text-text-main-dark font-sans transition-colors duration-300">
                 <Routes>
@@ -31,6 +33,7 @@ function App() {
                 </Routes>
             </div>
         </Router>
+        </LanguageProvider>
     )
 }
 

@@ -1,6 +1,9 @@
 import React from 'react';
+import { useLang } from '../../lib/LanguageContext';
 
 const MapSection = () => {
+    const { t } = useLang();
+
     return (
         <section className="h-[500px] relative w-full grayscale-[50%] hover:grayscale-0 transition-all duration-500">
             <iframe
@@ -15,9 +18,9 @@ const MapSection = () => {
             ></iframe>
 
             <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12 bg-white dark:bg-background-dark p-6 rounded-2xl shadow-xl max-w-sm">
-                <h3 className="text-xl font-bold font-display text-primary mb-2">Visit Our Salon</h3>
+                <h3 className="text-xl font-bold font-display text-primary mb-2">{t('map.title')}</h3>
                 <p className="text-text-muted-light dark:text-text-muted-dark mb-4 text-sm">
-                    123 Luxury Lane, Beverly Hills, CA 90210
+                    {t('map.address')}
                 </p>
                 <a
                     href="https://maps.google.com"
@@ -25,7 +28,7 @@ const MapSection = () => {
                     rel="noreferrer"
                     className="text-sm font-bold underline decoration-gold-accent underline-offset-4 hover:text-primary transition-colors"
                 >
-                    Get Directions
+                    {t('map.getDirections')}
                 </a>
             </div>
         </section>
