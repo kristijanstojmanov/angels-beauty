@@ -58,7 +58,7 @@ const Navbar = ({ onOpenBooking, onOpenShop }) => {
                         GR
                     </button>
                 </div>
-                <a href="tel:+15551234567" className="hidden md:flex items-center gap-2 border-2 border-primary text-primary rounded-full px-5 py-2.5 font-bold hover:bg-primary hover:text-white transition-all text-sm uppercase tracking-wide">
+                <a href="tel:+15551234567" className="flex items-center gap-2 border-2 border-primary text-primary rounded-full px-4 py-2 md:px-5 md:py-2.5 font-bold hover:bg-primary hover:text-white transition-all text-sm uppercase tracking-wide">
                     <span className="material-symbols-outlined text-base leading-none">call</span>
                     {t('nav.callNow')}
                 </a>
