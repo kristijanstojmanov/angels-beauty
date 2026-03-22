@@ -16,7 +16,7 @@ const MobileBottomNav = ({ onOpenBooking, onOpenShop, onOpenContact }) => {
         { icon: 'content_cut', label: t('nav.services'), action: () => scrollToSection('services') },
         { icon: 'calendar_month', label: t('nav.bookNow'), action: onOpenBooking, primary: true },
         { icon: 'shopping_bag', label: t('nav.shop'), action: onOpenShop },
-        { icon: 'event', label: t('nav.events'), action: () => scrollToSection('events') },
+        { icon: 'call', label: t('nav.callNow'), action: () => { window.location.href = 'tel:+15551234567'; } },
     ];
 
     return (

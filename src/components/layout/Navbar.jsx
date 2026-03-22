@@ -58,9 +58,9 @@ const Navbar = ({ onOpenBooking, onOpenShop }) => {
                         GR
                     </button>
                 </div>
-                <a href="tel:+15551234567" className="flex items-center gap-2 border-2 border-primary text-primary rounded-full px-2.5 py-2 md:px-5 md:py-2.5 font-bold hover:bg-primary hover:text-white transition-all text-sm uppercase tracking-wide">
+                <a href="tel:+15551234567" className="hidden md:flex items-center gap-2 border-2 border-primary text-primary rounded-full px-5 py-2.5 font-bold hover:bg-primary hover:text-white transition-all text-sm uppercase tracking-wide">
                     <span className="material-symbols-outlined text-base leading-none">call</span>
-                    <span className="hidden md:inline">{t('nav.callNow')}</span>
+                    {t('nav.callNow')}
                 </a>
                 <button onClick={onOpenBooking} className="bg-primary text-white rounded-full px-4 py-2 md:px-6 md:py-2.5 font-bold hover:bg-primary-hover shadow-lg shadow-primary/25 transition-all text-sm uppercase tracking-wide">
                     {t('nav.bookNow')}
