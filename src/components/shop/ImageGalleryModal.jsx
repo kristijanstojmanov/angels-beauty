@@ -2,23 +2,47 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
+const isVideoUrl = (item) => {
+    if (item?.type === 'video') return true;
+    const url = (item?.url || item || '').toLowerCase();
+    return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
+};
+
+const ImageGalleryModal = ({ items, images, initialIndex = 0, isOpen, onClose }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+    // Support both old `images` (string[]) and new `items` ({ url, type }[]) prop
+    const mediaItems = items || (images || []).map(url => ({ url, type: 'image' }));
 
     useEffect(() => {
         if (isOpen) setCurrentIndex(initialIndex);
     }, [isOpen, initialIndex]);
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKey = (e) => {
+            if (e.key === 'ArrowRight') setCurrentIndex(prev => (prev + 1) % mediaItems.length);
+            if (e.key === 'ArrowLeft') setCurrentIndex(prev => (prev - 1 + mediaItems.length) % mediaItems.length);
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [isOpen, mediaItems.length, onClose]);
+
+    if (!isOpen || mediaItems.length === 0) return null;
+
+    const current = mediaItems[currentIndex];
+    const currentUrl = current?.url || current;
+    const currentIsVideo = isVideoUrl(current);
 
     const handleNext = (e) => {
         e.stopPropagation();
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        setCurrentIndex((prev) => (prev + 1) % mediaItems.length);
     };
 
     const handlePrev = (e) => {
         e.stopPropagation();
-        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+        setCurrentIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
     };
 
     return ReactDOM.createPortal(
@@ -31,11 +55,15 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
                 <span className="material-symbols-outlined text-2xl">close</span>
             </button>
 
-            {/* Main Image Area */}
-            <div className="flex-grow flex items-center justify-center p-4 relative h-full">
+            {/* Counter */}
+            <div className="absolute top-5 left-1/2 -translate-x-1/2 text-white/60 text-sm font-bold z-50">
+                {currentIndex + 1} / {mediaItems.length}
+            </div>
 
-                {/* Navigation Arrows (only if multiple images) */}
-                {images.length > 1 && (
+            {/* Main Media Area */}
+            <div className="flex-grow flex items-center justify-center p-4 relative h-full" onClick={onClose}>
+                {/* Navigation Arrows */}
+                {mediaItems.length > 1 && (
                     <>
                         <button
                             onClick={handlePrev}
@@ -52,26 +80,53 @@ const ImageGalleryModal = ({ images, initialIndex = 0, isOpen, onClose }) => {
                     </>
                 )}
 
-                <img
-                    src={images[currentIndex]}
-                    alt={`Gallery view ${currentIndex + 1}`}
-                    className="max-h-full max-w-full object-contain shadow-2xl animate-scale-in"
-                />
+                {currentIsVideo ? (
+                    <video
+                        key={currentUrl}
+                        src={currentUrl}
+                        className="max-h-full max-w-full object-contain shadow-2xl animate-scale-in rounded-lg"
+                        controls
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ) : (
+                    <img
+                        src={currentUrl}
+                        alt={`Gallery view ${currentIndex + 1}`}
+                        className="max-h-full max-w-full object-contain shadow-2xl animate-scale-in"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                )}
             </div>
 
-            {/* Thumbnail Strip (only if multiple) */}
-            {images.length > 1 && (
+            {/* Thumbnail Strip */}
+            {mediaItems.length > 1 && (
                 <div className="h-24 bg-black/50 backdrop-blur-md flex items-center justify-center gap-4 p-4 shrink-0 overflow-x-auto">
-                    {images.map((img, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentIndex(idx)}
-                            className={`relative h-full aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === currentIndex ? 'border-primary scale-110' : 'border-transparent opacity-50 hover:opacity-100'
-                                }`}
-                        >
-                            <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
-                        </button>
-                    ))}
+                    {mediaItems.map((item, idx) => {
+                        const thumbUrl = item?.url || item;
+                        const thumbIsVideo = isVideoUrl(item);
+                        return (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentIndex(idx)}
+                                className={`relative h-full aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${idx === currentIndex ? 'border-primary scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                            >
+                                {thumbIsVideo ? (
+                                    <>
+                                        <video src={thumbUrl} className="w-full h-full object-cover" muted playsInline />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                            <span className="material-symbols-outlined text-white text-sm">play_arrow</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <img src={thumbUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
         </div>,
