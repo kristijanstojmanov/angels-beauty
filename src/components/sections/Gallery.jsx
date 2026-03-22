@@ -15,12 +15,14 @@ const Gallery = () => {
             try {
                 const { data, error } = await supabase
                     .from('gallery')
-                    .select('id, image_url, media_type')
+                    .select('id, image_url, media_type, embed_id, thumbnail_url')
                     .order('display_order', { ascending: true });
                 if (error) throw error;
                 if (data) setGalleryItems(data.map(item => ({
                     url: item.image_url,
                     type: item.media_type || 'image',
+                    embedId: item.embed_id,
+                    thumbnailUrl: item.thumbnail_url,
                 })));
             } catch (error) {
                 console.error("Error fetching gallery:", error.message);
@@ -37,8 +39,17 @@ const Gallery = () => {
         return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
     };
 
+    const isTikTok = (item) => item.type === 'tiktok';
+
     const isGif = (item) => {
         return (item.url?.toLowerCase() || '').endsWith('.gif');
+    };
+
+    const getMediaBadge = (item) => {
+        if (isTikTok(item)) return { icon: 'play_circle', label: 'TIKTOK' };
+        if (isVideo(item)) return { icon: 'videocam', label: 'VIDEO' };
+        if (isGif(item)) return { icon: 'gif_box', label: 'GIF' };
+        return null;
     };
 
     return (
@@ -58,47 +69,56 @@ const Gallery = () => {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {galleryItems.map((item, index) => (
-                        <div
-                            key={index}
-                            className={`rounded-xl overflow-hidden relative group h-64 md:h-80 ${index === 0 ? 'md:col-span-2' : ''} cursor-pointer`}
-                            onClick={() => {
-                                setInitialIndex(index);
-                                setIsGalleryOpen(true);
-                            }}
-                        >
-                            {isVideo(item) ? (
-                                <video
-                                    src={item.url}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    muted
-                                    autoPlay
-                                    loop
-                                    playsInline
-                                />
-                            ) : (
-                                <img
-                                    src={item.url}
-                                    alt={`Gallery ${index}`}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                            )}
+                    {galleryItems.map((item, index) => {
+                        const badge = getMediaBadge(item);
+                        return (
+                            <div
+                                key={index}
+                                className={`rounded-xl overflow-hidden relative group h-64 md:h-80 ${index === 0 ? 'md:col-span-2' : ''} cursor-pointer`}
+                                onClick={() => {
+                                    setInitialIndex(index);
+                                    setIsGalleryOpen(true);
+                                }}
+                            >
+                                {isTikTok(item) ? (
+                                    <img
+                                        src={item.thumbnailUrl || item.url}
+                                        alt="TikTok video"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                ) : isVideo(item) ? (
+                                    <video
+                                        src={item.url}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        muted
+                                        autoPlay
+                                        loop
+                                        playsInline
+                                    />
+                                ) : (
+                                    <img
+                                        src={item.url}
+                                        alt={`Gallery ${index}`}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                )}
 
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="material-symbols-outlined text-white text-4xl">
-                                    {isVideo(item) ? 'play_circle' : 'visibility'}
-                                </span>
-                            </div>
-
-                            {/* Video/GIF badge */}
-                            {(isVideo(item) || isGif(item)) && (
-                                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-xs">{isVideo(item) ? 'videocam' : 'gif_box'}</span>
-                                    {isVideo(item) ? 'VIDEO' : 'GIF'}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-white text-4xl">
+                                        {isTikTok(item) || isVideo(item) ? 'play_circle' : 'visibility'}
+                                    </span>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+
+                                {/* Media badge */}
+                                {badge && (
+                                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-xs">{badge.icon}</span>
+                                        {badge.label}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
