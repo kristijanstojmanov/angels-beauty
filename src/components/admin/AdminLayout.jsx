@@ -28,10 +28,16 @@ const AdminLayout = () => {
 
     const navItems = [
         { path: '/admin/dashboard', icon: 'dashboard', label: 'Overview' },
+        { path: '/admin/bookings', icon: 'calendar_month', label: 'Bookings' },
         { path: '/admin/services', icon: 'spa', label: 'Services' },
         { path: '/admin/products', icon: 'shopping_bag', label: 'Products' },
         { path: '/admin/gallery', icon: 'perm_media', label: 'Gallery' },
-        { path: '/admin/bookings', icon: 'calendar_month', label: 'Bookings' },
+        { path: '/admin/events', icon: 'event', label: 'Events' },
+        { path: '/admin/brands', icon: 'handshake', label: 'Brands' },
+        { path: '/admin/reviews', icon: 'star', label: 'Reviews' },
+        { path: '/admin/faq', icon: 'help', label: 'FAQ' },
+        { path: '/admin/stylist', icon: 'person', label: 'Stylist' },
+        { path: '/admin/settings', icon: 'settings', label: 'Settings' },
     ];
 
     return (

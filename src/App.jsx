@@ -10,6 +10,12 @@ import ServicesManager from './pages/admin/ServicesManager';
 import ProductsManager from './pages/admin/ProductsManager';
 import GalleryManager from './pages/admin/GalleryManager';
 import BookingsManager from './pages/admin/BookingsManager';
+import EventsManager from './pages/admin/EventsManager';
+import BrandsManager from './pages/admin/BrandsManager';
+import ReviewsManager from './pages/admin/ReviewsManager';
+import FAQManager from './pages/admin/FAQManager';
+import StylistManager from './pages/admin/StylistManager';
+import SettingsManager from './pages/admin/SettingsManager';
 
 
 function App() {
@@ -29,6 +35,12 @@ function App() {
                         <Route path="products" element={<ProductsManager />} />
                         <Route path="gallery" element={<GalleryManager />} />
                         <Route path="bookings" element={<BookingsManager />} />
+                        <Route path="events" element={<EventsManager />} />
+                        <Route path="brands" element={<BrandsManager />} />
+                        <Route path="reviews" element={<ReviewsManager />} />
+                        <Route path="faq" element={<FAQManager />} />
+                        <Route path="stylist" element={<StylistManager />} />
+                        <Route path="settings" element={<SettingsManager />} />
                     </Route>
                 </Routes>
             </div>

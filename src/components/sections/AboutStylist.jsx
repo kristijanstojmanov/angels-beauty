@@ -1,9 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLang } from '../../lib/LanguageContext';
+import { supabase } from '../../lib/supabase';
 
 const AboutStylist = ({ onOpenBooking }) => {
-    const { t } = useLang();
+    const { t, lang } = useLang();
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+    const [stylist, setStylist] = useState(null);
+
+    useEffect(() => {
+        const fetchStylist = async () => {
+            const { data } = await supabase
+                .from('stylists')
+                .select('*')
+                .eq('is_main', true)
+                .limit(1)
+                .single();
+            if (data) setStylist(data);
+        };
+        fetchStylist();
+    }, []);
+
+    if (!stylist) return null;
+
+    const name = stylist.name;
+    const role = lang === 'el' ? (stylist.role_el || stylist.role_en) : stylist.role_en;
+    const bio = lang === 'el' ? (stylist.bio_el || stylist.bio_en) : stylist.bio_en;
+    const specialties = lang === 'el' ? (stylist.specialties_el || stylist.specialties_en || []) : (stylist.specialties_en || []);
+    const certifications = lang === 'el' ? (stylist.certifications_el || stylist.certifications_en || []) : (stylist.certifications_en || []);
+    const experience = lang === 'el' ? `${stylist.experience_years}+ χρόνια εμπειρίας` : `${stylist.experience_years}+ years experience`;
+    const imageUrl = stylist.image_url || '/images/stylist.jpg';
 
     return (
         <>
@@ -25,8 +50,8 @@ const AboutStylist = ({ onOpenBooking }) => {
                                 <div className="absolute inset-0 bg-primary/10 rounded-[2.5rem] transform rotate-3"></div>
                                 <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden shadow-2xl">
                                     <img
-                                        src="/images/stylist.jpg"
-                                        alt={t('about.name')}
+                                        src={imageUrl}
+                                        alt={name}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
                                             e.target.src = 'https://images.unsplash.com/photo-1595959183082-7b570b7e1e2a?w=400&h=500&fit=crop';
@@ -34,27 +59,24 @@ const AboutStylist = ({ onOpenBooking }) => {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                                     <div className="absolute bottom-6 left-6 right-6 text-white">
-                                        <h3 className="text-2xl font-display font-bold">{t('about.name')}</h3>
-                                        <p className="text-white/80 text-sm">{t('about.role')}</p>
+                                        <h3 className="text-2xl font-display font-bold">{name}</h3>
+                                        <p className="text-white/80 text-sm">{role}</p>
                                     </div>
                                 </div>
-                                {/* Experience badge */}
                                 <div className="absolute -bottom-4 -right-4 bg-primary text-white px-5 py-3 rounded-2xl shadow-lg shadow-primary/30 font-bold text-sm">
-                                    {t('about.experience')}
+                                    {experience}
                                 </div>
                             </div>
                         </div>
 
                         {/* Info */}
                         <div className="lg:w-3/5 space-y-6">
-                            <p className="text-gray-600 leading-relaxed text-lg">
-                                {t('about.bio')}
-                            </p>
+                            <p className="text-gray-600 leading-relaxed text-lg">{bio}</p>
 
                             <div className="bg-gray-50 rounded-2xl p-6 space-y-3">
                                 <h4 className="font-bold text-sm uppercase tracking-wider text-gray-400">{t('about.specialties')}</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {t('about.specialtyList').split(', ').map((specialty) => (
+                                    {specialties.map((specialty) => (
                                         <span key={specialty} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-semibold text-gray-700">
                                             {specialty}
                                         </span>
@@ -64,7 +86,7 @@ const AboutStylist = ({ onOpenBooking }) => {
 
                             <p className="flex items-center gap-2 text-sm text-gray-500">
                                 <span className="material-symbols-outlined text-gold-accent">workspace_premium</span>
-                                {t('about.certifications')}
+                                {certifications.join(' • ')}
                             </p>
 
                             <div className="flex flex-wrap gap-4 pt-2">
@@ -94,11 +116,10 @@ const AboutStylist = ({ onOpenBooking }) => {
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsOverlayOpen(false)}></div>
 
                     <div className="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-2xl z-10 flex flex-col md:flex-row animate-fade-in-up">
-                        {/* Left: Large Photo */}
                         <div className="md:w-2/5 h-64 md:h-auto relative">
                             <img
-                                src="/images/stylist.jpg"
-                                alt={t('about.name')}
+                                src={imageUrl}
+                                alt={name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                     e.target.src = 'https://images.unsplash.com/photo-1595959183082-7b570b7e1e2a?w=600&h=800&fit=crop';
@@ -106,12 +127,11 @@ const AboutStylist = ({ onOpenBooking }) => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-transparent"></div>
                             <div className="absolute bottom-6 left-6 md:hidden text-white">
-                                <h3 className="text-3xl font-display font-bold">{t('about.name')}</h3>
-                                <p className="text-white/80">{t('about.role')}</p>
+                                <h3 className="text-3xl font-display font-bold">{name}</h3>
+                                <p className="text-white/80">{role}</p>
                             </div>
                         </div>
 
-                        {/* Right: Full Bio */}
                         <div className="md:w-3/5 p-8 md:p-12 overflow-y-auto">
                             <button
                                 onClick={() => setIsOverlayOpen(false)}
@@ -121,23 +141,21 @@ const AboutStylist = ({ onOpenBooking }) => {
                             </button>
 
                             <div className="hidden md:block mb-6">
-                                <h3 className="text-4xl font-display font-bold text-gray-900">{t('about.name')}</h3>
-                                <p className="text-primary font-semibold mt-1">{t('about.role')}</p>
+                                <h3 className="text-4xl font-display font-bold text-gray-900">{name}</h3>
+                                <p className="text-primary font-semibold mt-1">{role}</p>
                             </div>
 
                             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold mb-6">
                                 <span className="material-symbols-outlined text-sm">star</span>
-                                {t('about.experience')}
+                                {experience}
                             </div>
 
-                            <p className="text-gray-600 leading-relaxed text-lg mb-8">
-                                {t('about.bio')}
-                            </p>
+                            <p className="text-gray-600 leading-relaxed text-lg mb-8">{bio}</p>
 
                             <div className="bg-gray-50 rounded-2xl p-6 mb-6">
                                 <h4 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-3">{t('about.specialties')}</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {t('about.specialtyList').split(', ').map((specialty) => (
+                                    {specialties.map((specialty) => (
                                         <span key={specialty} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-semibold text-gray-700">
                                             {specialty}
                                         </span>
@@ -147,7 +165,7 @@ const AboutStylist = ({ onOpenBooking }) => {
 
                             <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
                                 <span className="material-symbols-outlined text-gold-accent">workspace_premium</span>
-                                {t('about.certifications')}
+                                {certifications.join(' • ')}
                             </div>
 
                             <button

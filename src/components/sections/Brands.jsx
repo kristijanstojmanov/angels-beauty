@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLang } from '../../lib/LanguageContext';
-
-const brandLogos = [
-    { name: "L'Oréal", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/L%27Or%C3%A9al_logo.svg/200px-L%27Or%C3%A9al_logo.svg.png" },
-    { name: "Wella", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Wella_logo.svg/200px-Wella_logo.svg.png" },
-    { name: "Redken", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Redken_logo.svg/200px-Redken_logo.svg.png" },
-    { name: "Kérastase", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/K%C3%A9rastase_logo.svg/200px-K%C3%A9rastase_logo.svg.png" },
-    { name: "Olaplex", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Olaplex_logo.svg/200px-Olaplex_logo.svg.png" },
-    { name: "GHD", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Ghd_logo.svg/200px-Ghd_logo.svg.png" },
-];
+import { supabase } from '../../lib/supabase';
 
 const Brands = () => {
     const { t } = useLang();
+    const [brands, setBrands] = useState([]);
+
+    useEffect(() => {
+        const fetchBrands = async () => {
+            const { data } = await supabase
+                .from('brands')
+                .select('*')
+                .order('display_order', { ascending: true });
+            if (data) setBrands(data);
+        };
+        fetchBrands();
+    }, []);
+
+    if (brands.length === 0) return null;
 
     return (
         <section className="py-16 bg-white border-y border-gray-100">
@@ -26,13 +32,13 @@ const Brands = () => {
                 </div>
 
                 <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-                    {brandLogos.map((brand) => (
+                    {brands.map((brand) => (
                         <div
-                            key={brand.name}
+                            key={brand.id}
                             className="group flex items-center justify-center w-28 h-16 md:w-36 md:h-20 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
                         >
                             <img
-                                src={brand.logo}
+                                src={brand.logo_url}
                                 alt={brand.name}
                                 className="max-w-full max-h-full object-contain"
                                 onError={(e) => {

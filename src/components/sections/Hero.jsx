@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLang } from '../../lib/LanguageContext';
+import { supabase } from '../../lib/supabase';
+
+const reviewPositions = [
+    "top-[15%] right-[10%]",
+    "top-[30%] right-[25%]",
+    "bottom-[35%] right-[5%]",
+    "top-[50%] right-[18%]",
+    "bottom-[20%] right-[30%]",
+];
 
 const Hero = ({ onOpenBooking, onOpenShop }) => {
-    const { t } = useLang();
+    const { t, lang } = useLang();
+    const [reviews, setReviews] = useState([]);
 
-    const reviews = [
-        { text: t('hero.review1'), user: t('hero.review1Author'), pos: "top-[15%] right-[10%]", delay: "0s" },
-        { text: t('hero.review2'), user: t('hero.review2Author'), pos: "top-[30%] right-[25%]", delay: "1s" },
-        { text: t('hero.review3'), user: t('hero.review3Author'), pos: "bottom-[35%] right-[5%]", delay: "2s" },
-        { text: t('hero.review4'), user: t('hero.review4Author'), pos: "top-[50%] right-[18%]", delay: "0.5s" },
-        { text: t('hero.review5'), user: t('hero.review5Author'), pos: "bottom-[20%] right-[30%]", delay: "1.5s" }
-    ];
+    useEffect(() => {
+        const fetchReviews = async () => {
+            const { data } = await supabase
+                .from('reviews')
+                .select('*')
+                .eq('is_featured', true)
+                .order('created_at', { ascending: true })
+                .limit(5);
+            if (data) setReviews(data);
+        };
+        fetchReviews();
+    }, []);
 
     return (
         <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -47,9 +62,9 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
 
                     <div className="flex items-center gap-4 pt-4 border-t border-white/20 max-w-xs">
                         <div className="flex -space-x-3">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-background-dark bg-gray-300 overflow-hidden">
-                                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" className="w-full h-full object-cover" />
+                            {reviews.slice(0, 4).map((r, i) => (
+                                <div key={r.id} className="w-10 h-10 rounded-full border-2 border-background-dark bg-gray-300 overflow-hidden">
+                                    <img src={r.avatar_url || `https://i.pravatar.cc/100?img=${i + 10}`} alt={r.author} className="w-full h-full object-cover" />
                                 </div>
                             ))}
                         </div>
@@ -67,15 +82,17 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
                 {/* Scattered Reviews */}
                 <div className="absolute inset-0 pointer-events-none z-10 hidden lg:block">
                     {reviews.map((review, i) => (
-                        <div key={i} className={`absolute ${review.pos} pointer-events-auto bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl shadow-lg flex items-center gap-3 hover:scale-110 transition-transform duration-300 cursor-pointer max-w-[220px] hover:bg-white/20 group`}>
-                            <img src={`https://i.pravatar.cc/100?img=${i + 30}`} alt={review.user} className="w-8 h-8 rounded-full border border-white" />
+                        <div key={review.id} className={`absolute ${reviewPositions[i] || reviewPositions[0]} pointer-events-auto bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl shadow-lg flex items-center gap-3 hover:scale-110 transition-transform duration-300 cursor-pointer max-w-[220px] hover:bg-white/20 group`}>
+                            <img src={review.avatar_url || `https://i.pravatar.cc/100?img=${i + 30}`} alt={review.author} className="w-8 h-8 rounded-full border border-white" />
                             <div>
                                 <div className="flex text-gold-accent text-[10px] mb-0.5">
-                                    {[...Array(5)].map((_, star) => (
-                                        <span key={star} className="material-symbols-outlined text--[10px] fill-current">star</span>
+                                    {[...Array(review.rating)].map((_, star) => (
+                                        <span key={star} className="material-symbols-outlined text-[10px] fill-current">star</span>
                                     ))}
                                 </div>
-                                <p className="text-white text-xs italic leading-tight group-hover:text-gold-accent transition-colors">"{review.text}"</p>
+                                <p className="text-white text-xs italic leading-tight group-hover:text-gold-accent transition-colors">
+                                    "{lang === 'el' ? (review.text_el || review.text_en) : review.text_en}"
+                                </p>
                             </div>
                         </div>
                     ))}
@@ -86,8 +103,8 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
             <div className="hidden md:block absolute font-sans bottom-10 right-6 md:right-20 md:bottom-20 bg-white/10 backdrop-blur-lg border border-white/20 p-5 rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300 z-20 max-w-xs cursor-default hover:bg-white/20">
                 <div className="flex items-center gap-4">
                     <div className="flex -space-x-4">
-                        {[1, 2, 3].map((i) => (
-                            <img key={i} src={`https://i.pravatar.cc/100?img=${i + 25}`} alt="Client" className="w-12 h-12 rounded-full border-2 border-white object-cover" />
+                        {reviews.slice(0, 3).map((r, i) => (
+                            <img key={r.id} src={r.avatar_url || `https://i.pravatar.cc/100?img=${i + 25}`} alt={r.author} className="w-12 h-12 rounded-full border-2 border-white object-cover" />
                         ))}
                     </div>
                     <div>
