@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useLang } from '../../lib/LanguageContext';
 import { supabase } from '../../lib/supabase';
 
 const Brands = () => {
-    const { t } = useLang();
     const [brands, setBrands] = useState([]);
     const [brokenImages, setBrokenImages] = useState(new Set());
 
@@ -24,26 +22,20 @@ const Brands = () => {
 
     if (brands.length === 0) return null;
 
-    return (
-        <section className="py-16 bg-white border-y border-gray-100">
-            <div className="container mx-auto px-6">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl lg:text-4xl font-display font-medium text-primary tracking-tight">
-                        {t('brands.title')}
-                    </h2>
-                    <p className="text-gray-500 mt-2 text-sm tracking-wide">
-                        {t('brands.subtitle')}
-                    </p>
-                </div>
+    // Double the brands for seamless loop
+    const scrollBrands = [...brands, ...brands];
 
-                <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-                    {brands.map((brand) => (
+    return (
+        <section className="py-6 bg-gray-50 border-b border-gray-100 overflow-hidden">
+            <div className="relative">
+                <div className="flex items-center gap-12 md:gap-20 animate-scroll-right-to-left">
+                    {scrollBrands.map((brand, i) => (
                         <div
-                            key={brand.id}
-                            className="group flex items-center justify-center w-28 h-16 md:w-36 md:h-20 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+                            key={`${brand.id}-${i}`}
+                            className="flex items-center justify-center shrink-0 w-28 h-12 md:w-36 md:h-14 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
                         >
                             {brokenImages.has(brand.id) ? (
-                                <span className="text-xl md:text-2xl font-display font-bold text-gray-400 group-hover:text-primary transition-colors">
+                                <span className="text-lg md:text-xl font-display font-bold text-gray-400 whitespace-nowrap">
                                     {brand.name}
                                 </span>
                             ) : (
@@ -58,6 +50,19 @@ const Brands = () => {
                     ))}
                 </div>
             </div>
+
+            <style>{`
+                @keyframes scrollRightToLeft {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .animate-scroll-right-to-left {
+                    animation: scrollRightToLeft 20s linear infinite;
+                }
+                .animate-scroll-right-to-left:hover {
+                    animation-play-state: paused;
+                }
+            `}</style>
         </section>
     );
 };

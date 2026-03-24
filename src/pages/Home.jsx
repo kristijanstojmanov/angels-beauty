@@ -36,9 +36,9 @@ const Home = () => {
 
             <main>
                 <Hero onOpenBooking={() => setIsBookingOpen(true)} onOpenShop={() => handleOpenShop(null)} />
+                <Brands />
                 <Services onOpenBooking={() => setIsBookingOpen(true)} />
                 <AboutStylist onOpenBooking={() => setIsBookingOpen(true)} />
-                <Brands />
                 <ShopPreview onOpenShop={handleOpenShop} />
                 <Gallery />
                 <Events />

@@ -2,14 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useLang } from '../../lib/LanguageContext';
 import { supabase } from '../../lib/supabase';
 
-const reviewPositions = [
-    "top-[15%] right-[10%]",
-    "top-[30%] right-[25%]",
-    "bottom-[35%] right-[5%]",
-    "top-[50%] right-[18%]",
-    "bottom-[20%] right-[30%]",
-];
-
 const Hero = ({ onOpenBooking, onOpenShop }) => {
     const { t, lang } = useLang();
     const [reviews, setReviews] = useState([]);
@@ -30,6 +22,15 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
         };
         fetchReviews();
     }, []);
+
+    // Positions use calc-based values that adapt to container size
+    const floatingPositions = [
+        { top: '12%', right: '8%' },
+        { top: '28%', right: '22%' },
+        { top: '46%', right: '4%' },
+        { top: '62%', right: '18%' },
+        { bottom: '12%', right: '8%' },
+    ];
 
     return (
         <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -83,28 +84,66 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
                     </div>
                 </div>
 
-                {/* Scattered Reviews */}
+                {/* Scattered floating reviews - desktop only */}
                 <div className="absolute inset-0 pointer-events-none z-10 hidden lg:block">
-                    {reviews.map((review, i) => (
-                        <div key={review.id} className={`absolute ${reviewPositions[i] || reviewPositions[0]} pointer-events-auto bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl shadow-lg flex items-center gap-3 hover:scale-110 transition-transform duration-300 cursor-pointer max-w-[220px] hover:bg-white/20 group`}>
-                            <img src={review.avatar_url || `https://i.pravatar.cc/100?img=${i + 30}`} alt={review.author} className="w-8 h-8 rounded-full border border-white" />
-                            <div>
-                                <div className="flex text-gold-accent text-[10px] mb-0.5">
-                                    {[...Array(review.rating)].map((_, star) => (
-                                        <span key={star} className="material-symbols-outlined text-[10px] fill-current">star</span>
-                                    ))}
+                    {reviews.map((review, i) => {
+                        const pos = floatingPositions[i] || floatingPositions[0];
+                        return (
+                            <div
+                                key={review.id}
+                                className="absolute pointer-events-auto bg-white/10 backdrop-blur-lg border border-white/20 p-3 rounded-2xl shadow-lg hover:scale-110 hover:bg-white/25 transition-all duration-300 cursor-default"
+                                style={{
+                                    ...pos,
+                                    maxWidth: 'min(240px, 20vw)',
+                                    animation: `fadeSlideIn 0.6s ease-out ${i * 0.15}s both`,
+                                }}
+                            >
+                                <div className="flex items-start gap-2.5">
+                                    <img
+                                        src={review.avatar_url || `https://i.pravatar.cc/100?img=${i + 30}`}
+                                        alt={review.author}
+                                        className="w-9 h-9 rounded-full border-2 border-white/40 object-cover shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                        <div className="flex text-gold-accent text-[10px] mb-0.5">
+                                            {[...Array(review.rating)].map((_, star) => (
+                                                <span key={star} className="material-symbols-outlined text-[10px] fill-current">star</span>
+                                            ))}
+                                        </div>
+                                        <p className="text-white text-[11px] leading-snug line-clamp-2 italic">
+                                            "{lang === 'el' ? (review.text_el || review.text_en) : review.text_en}"
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="text-white text-xs italic leading-tight group-hover:text-gold-accent transition-colors">
-                                    "{lang === 'el' ? (review.text_el || review.text_en) : review.text_en}"
-                                </p>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Large Review Badge */}
-            <div className="hidden md:block absolute font-sans bottom-10 right-6 md:right-20 md:bottom-20 bg-white/10 backdrop-blur-lg border border-white/20 p-5 rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300 z-20 max-w-xs cursor-default hover:bg-white/20">
+            {/* Trusted badge - tablet only (md but not lg) */}
+            <div className="hidden md:block lg:hidden absolute bottom-8 right-6 bg-white/10 backdrop-blur-lg border border-white/20 p-4 rounded-2xl shadow-2xl z-20 max-w-[260px]">
+                <div className="flex items-center gap-3">
+                    <div className="flex -space-x-3">
+                        {reviews.slice(0, 3).map((r, i) => (
+                            <img key={r.id} src={r.avatar_url || `https://i.pravatar.cc/100?img=${i + 25}`} alt={r.author} className="w-10 h-10 rounded-full border-2 border-white object-cover" />
+                        ))}
+                    </div>
+                    <div>
+                        <div className="flex text-gold-accent">
+                            {[...Array(5)].map((_, i) => (
+                                <span key={i} className="material-symbols-outlined fill-current text-xs">star</span>
+                            ))}
+                        </div>
+                        <p className="text-white font-bold text-xs leading-tight">
+                            {t('hero.trustedBy')}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Large trusted badge - desktop, bottom right */}
+            <div className="hidden lg:block absolute bottom-8 right-8 xl:right-16 bg-white/10 backdrop-blur-lg border border-white/20 p-5 rounded-2xl shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300 z-20 max-w-xs cursor-default hover:bg-white/20">
                 <div className="flex items-center gap-4">
                     <div className="flex -space-x-4">
                         {reviews.slice(0, 3).map((r, i) => (
@@ -123,6 +162,13 @@ const Hero = ({ onOpenBooking, onOpenShop }) => {
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes fadeSlideIn {
+                    from { opacity: 0; transform: translateY(12px) scale(0.95); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+            `}</style>
         </section>
     );
 };
